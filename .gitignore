@@ -9,12 +9,13 @@ build/
 .env.*
 !.env.example
 
-# Local Data Dumps & Large Assets
-*.json
+# Protect Essential Project Configs
+!package.json
+!package-lock.json
 !submission.json
 !calculated_answers.json
+
+# Local Data Dumps & Raw Datasets (Target specific files, avoid wildcard *.json)
 raw_listings.json
 raw_rentals.json
 raw_projects.json
-public/assets/large/
-src/assets/downloads/
