@@ -15,20 +15,34 @@ The app uses the real API at `https://solve.ivy.homes`. The API key is required 
 
 ## What is implemented
 
-- `POST /auth/login` with persisted 24-hour session and server-side logout
-- listings with locality, bedroom, furnishing and pagination controls
-- listing details, seller contact, verification, area and price-per-square-foot display
-- per-user favourites using the API
-- rentals and projects with rupee and square-foot formatting
-- analytics summary with locality and BHK visualizations
-- loading, empty and API error states
-- responsive mobile layout and keyboard-friendly native form controls
+* `POST /auth/login` with persisted 24-hour session and server-side logout
+* Listings with locality, bedroom, furnishing, filters, and pagination
+* Listing details with seller contact, verification, area, and price-per-square-foot display
+* Per-user favourites using the API
+* Rentals and projects with rupee and square-foot formatting
+* Analytics summary with locality and BHK visualizations
+* Loading, empty, and API error states
+* Responsive mobile layout and keyboard-friendly native form controls
 
-## Investigation
+## Investigation & Hypotheses
 
-The reference is intentionally unreliable. I treated the API as the source of truth, paged through collections, checked response metadata, tested filters and sorting, compared project counts with listings, and checked dates and numeric fields before trusting them. The reproducible collection and calculation queries are in [ANSWER_QUERIES.md](ANSWER_QUERIES.md).
+I followed a hypothesis-driven approach to investigate potentially unreliable API data.
 
-The final `submission.json` should contain the answers and only findings personally reproduced against your own key. Do not put the API key in README, source files, screenshots, or git history.
+* **Corrupt listings:** Checked logical inconsistencies such as `carpet_area > super_built_up_area`, `floor > total_floors`, and negative numerical values.
+* **Fake listings:** Used `price_per_sqft = price / carpet_area` to identify extreme pricing outliers and verified suspicious records.
+* **Endpoint discrepancies:** Compared documented API behaviour with actual responses, including pagination, filters, sorting, response metadata, and project listing counts.
+
+Only findings reproducible from the API were included in the final submission.
+
+## AI Tools Used
+
+The following AI tools were used during development and investigation:
+
+* **ChatGPT** — coding, debugging, API analysis, and documentation
+* **Gemini Flash** — coding and debugging assistance
+* **Antigravity** — development and implementation assistance
+
+All final implementation and API findings were reviewed and verified against the Ivy Homes API using my assigned key.
 
 ## Build
 
@@ -38,8 +52,14 @@ npm run build
 
 ## Deployment
 
-Deploy as a Vite static site on Vercel, Netlify, Cloudflare Pages, or Render. Add `VITE_IVY_API_URL` and `VITE_IVY_API_KEY` as build environment variables, then use the generated `dist` directory or the platform's Vite preset.
+Deploy as a Vite static site on Vercel, Netlify, Cloudflare Pages, or Render.
 
-## AI disclosure
+Add `VITE_IVY_API_URL` and `VITE_IVY_API_KEY` as build environment variables, then use the generated `dist` directory or the platform's Vite preset.
 
-This implementation was created with an LLM and reviewed locally with a production build. API findings and submission answers must be generated and checked by the candidate using their assigned key.
+## Submission
+
+The final `submission.json` contains the assignment answers and only the API findings reproduced using my assigned key.
+
+The reproducible data collection and calculation logic is available in [`scripts/generate_submission.js`](scripts/generate_submission.js).
+
+The API key is not included in the README, source files, screenshots, or git history.
