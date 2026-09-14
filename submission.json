@@ -1,22 +1,240 @@
 {
-  "api_key": "IVY26-REPLACE-ME",
+  "api_key": "IVY26-40298FE9B48A",
   "candidate": {
-    "name": "Your Name",
-    "email": "you@mnnit.ac.in",
-    "repo_url": "https://github.com/you/ivy-assignment",
-    "demo_url": "https://your-app.vercel.app"
+    "name": "Palak Jain",
+    "email": "palak.20236195@mnnit.ac.in",
+    "repo_url": "https://github.com/Pjdash/IVY-Homes",
+    "demo_url": "ivy-homes-lyart.vercel.app"
   },
   "answers": {
-    "total_listing_records": 0,
-    "unique_properties": 0,
-    "active_listings": 0,
-    "corrupt_listing_ids": [],
-    "total_monthly_rent": 0,
-    "avg_price_per_sqft_2bhk": 0.0,
-    "costliest_project": { "project_id": "", "price_max_inr": 0 },
-    "listings_last_7_days": 0,
-    "fake_listing_ids": [],
-    "projects_with_wrong_listing_count": 0
+    "total_listing_records": 3300,
+    "unique_properties": 3300,
+    "active_listings": 2627,
+    "corrupt_listing_ids": [
+      "100-6000323",
+      "100-6000338",
+      "100-6001461",
+      "100-6001968",
+      "100-6002071",
+      "DWE-6000010",
+      "DWE-6001015",
+      "DWE-6002663",
+      "DWE-6002846",
+      "MAG-6000453",
+      "MAG-6000527",
+      "MAG-6000631",
+      "MAG-6001135",
+      "MAG-6002834",
+      "SQU-6001477",
+      "SQU-6003044",
+      "ZER-6000468",
+      "ZER-6000669"
+    ],
+    "total_monthly_rent": 4537100,
+    "avg_price_per_sqft_2bhk": 26091.45,
+    "costliest_project": {
+      "project_id": "P60060",
+      "price_max_inr": 58300000
+    },
+    "listings_last_7_days": 122,
+    "fake_listing_ids": [
+      "100-6000578",
+      "100-6000678",
+      "100-6001599",
+      "MAG-6002941",
+      "SQU-6000395"
+    ],
+    "projects_with_wrong_listing_count": 288
   },
-  "findings": []
+  "findings": [
+    {
+      "endpoint": "*",
+      "category": "auth",
+      "documented": "Every request must carry the API key as a query parameter ?api_key=...",
+      "actual": "Query parameter api_key is rejected; requests require the X-API-Key HTTP header.",
+      "how_found": "Called GET /v1/listings?api_key=... and received 401; request succeeded when using X-API-Key header.",
+      "impact": "Any client implemented directly from the documentation fails authentication completely.",
+      "evidence": []
+    },
+    {
+      "endpoint": "/v1/listing/{id}",
+      "category": "missing_endpoint",
+      "documented": "GET /v1/listing/{listing_id} returns a single listing object.",
+      "actual": "Singular path returns 404 Not Found. The active backend endpoint is pluralized: GET /v1/listings/{listing_id}.",
+      "how_found": "Tested GET /v1/listing/100-6000047 (404) vs GET /v1/listings/100-6000047 (200).",
+      "impact": "Listing detail pages fail to resolve if using the documented singular path.",
+      "evidence": [
+        "100-6000047"
+      ]
+    },
+    {
+      "endpoint": "/v1/favourites",
+      "category": "missing_endpoint",
+      "documented": "GET, POST, and DELETE /v1/favourites manage user saved listings.",
+      "actual": "All documented /v1/favourites routes return 404 Not Found.",
+      "how_found": "Probed /v1/favourites with valid bearer token after logging in.",
+      "impact": "Saved listing actions fail if sent to the documented route.",
+      "evidence": []
+    },
+    {
+      "endpoint": "/v1/saved",
+      "category": "undocumented_endpoint",
+      "documented": "Endpoint is not listed anywhere in the API reference document.",
+      "actual": "Backend responds to GET and POST requests at /v1/saved to manage saved user listings.",
+      "how_found": "Tested fallback paths and verified state persistence at /v1/saved.",
+      "impact": "Developers following only documentation miss the working user-favourites backend.",
+      "evidence": []
+    },
+    {
+      "endpoint": "/v1/analytics/summary",
+      "category": "missing_endpoint",
+      "documented": "Returns pre-computed city aggregates for a dashboard screen.",
+      "actual": "Returns 404 Not Found.",
+      "how_found": "Called documented path with API key and Bearer auth token.",
+      "impact": "Analytics must be calculated dynamically from raw collections.",
+      "evidence": []
+    },
+    {
+      "endpoint": "/v1/listings/{id}/similar",
+      "category": "missing_endpoint",
+      "documented": "Returns up to ten comparable listings at GET /v1/listings/{listing_id}/similar.",
+      "actual": "Returns 404 Not Found.",
+      "how_found": "Tested endpoint with valid listing IDs.",
+      "impact": "Similar listing recommendations must be derived client-side.",
+      "evidence": []
+    },
+    {
+      "endpoint": "/v1/listings",
+      "category": "completeness",
+      "documented": "Returns active sale listings in your city. Inactive, expired and withdrawn listings are excluded server side.",
+      "actual": "Returns inactive listings with is_live=false as well.",
+      "how_found": "Paged through all listings and checked the is_live flag values.",
+      "impact": "UI displays inactive/withdrawn inventory unless filtered client-side.",
+      "evidence": [
+        "SQU-6001937",
+        "DWE-6002796",
+        "MAG-6000794",
+        "SQU-6003155",
+        "SQU-6000987",
+        "SQU-6000737",
+        "DWE-6002177",
+        "DWE-6002689",
+        "100-6001196",
+        "MAG-6001288",
+        "100-6001939",
+        "100-6003034",
+        "ZER-6000180",
+        "ZER-6000474",
+        "SQU-6002061",
+        "100-6002415",
+        "SQU-6001398",
+        "ZER-6001587",
+        "100-6000309",
+        "100-6002885"
+      ]
+    },
+    {
+      "endpoint": "/v1/listings",
+      "category": "data_quality",
+      "documented": "Listing records describe real, physically possible properties.",
+      "actual": "The dataset contains 18 listing records with invalid or internally inconsistent property data.",
+      "how_found": "Applied objective data-consistency checks: negative price/area/floor values, carpet area greater than super built-up area, and floor greater than total floors.",
+      "impact": "These records can distort property-level and market-level calculations and should be excluded from downstream analysis.",
+      "evidence": [
+        "100-6000323",
+        "100-6000338",
+        "100-6001461",
+        "100-6001968",
+        "100-6002071",
+        "DWE-6000010",
+        "DWE-6001015",
+        "DWE-6002663",
+        "DWE-6002846",
+        "MAG-6000453",
+        "MAG-6000527",
+        "MAG-6000631",
+        "MAG-6001135",
+        "MAG-6002834",
+        "SQU-6001477",
+        "SQU-6003044",
+        "ZER-6000468",
+        "ZER-6000669"
+      ]
+    },
+    {
+      "endpoint": "/v1/listings",
+      "category": "fraud",
+      "documented": "Listing records describe genuine properties.",
+      "actual": "Four listings are extreme tiny-area/high-price outliers consistent with enquiry-generation fake listings: 100-6000578, 100-6000678, 100-6001599, MAG-6002941, SQU-6000395.",
+      "how_found": "Calculated price per square foot as price divided by carpet area for listings with valid positive price and carpet area. Listings with price per sqft <= ₹100  were flagged as extreme outliers.",
+      "impact": "Extreme price-per-square-foot outliers can significantly distort market-price calculations, so these listings are excluded from the downstream 2 BHK average price-per-sqft calculation.",
+      "evidence": [
+        "100-6000578",
+        "100-6000678",
+        "100-6001599",
+        "MAG-6002941",
+        "SQU-6000395"
+      ]
+    },
+    {
+      "endpoint": "/v1/projects",
+      "category": "consistency",
+      "documented": "total_listings always agrees with what GET /v1/listings?project_id=... returns.",
+      "actual": "288 projects report a total_listings count that disagrees with the listing records carrying that project_id.",
+      "how_found": "Grouped all retrievable listing records by project_id and compared those counts against total_listings for each project.",
+      "impact": "Project cards relying on total_listings can show inaccurate unit counts.",
+      "evidence": [
+        "P60001",
+        "P60002",
+        "P60004",
+        "P60005",
+        "P60006",
+        "P60007",
+        "P60009",
+        "P60010",
+        "P60011",
+        "P60012",
+        "P60013",
+        "P60014",
+        "P60016",
+        "P60017",
+        "P60018",
+        "P60019",
+        "P60021",
+        "P60022",
+        "P60023",
+        "P60025"
+      ]
+    },
+    {
+      "endpoint": "/v1/projects",
+      "category": "units",
+      "documented": "price_min and price_max are in integer rupees.",
+      "actual": "Project price values are stored as mixed Crore/Lakh values rather than normalized integer INR. Values such as 1.66 represent Crores while values such as 94.6 represent Lakhs.",
+      "how_found": "Inspected project price_min and price_max values and compared them against listing prices and the documented INR unit. The raw project values contain decimal Crore/Lakh-scale values rather than integer rupee amounts.",
+      "impact": "Displaying raw values as INR produces property prices wrong by orders of magnitude.",
+      "evidence": [
+        "P60001",
+        "P60002",
+        "P60003",
+        "P60004",
+        "P60005",
+        "P60006",
+        "P60007",
+        "P60008",
+        "P60009",
+        "P60010",
+        "P60011",
+        "P60012",
+        "P60013",
+        "P60014",
+        "P60015",
+        "P60016",
+        "P60017",
+        "P60018",
+        "P60019",
+        "P60020"
+      ]
+    }
+  ]
 }
