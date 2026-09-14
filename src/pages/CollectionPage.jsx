@@ -18,6 +18,7 @@ const defaults = (rentals) => ({
   sort_by: rentals ? "posted_at" : "launch_date",
   order: "desc",
 });
+
 function RentalCard({ item, index }) {
   return (
     <article className="wide-card">
@@ -51,6 +52,7 @@ function RentalCard({ item, index }) {
     </article>
   );
 }
+
 function ProjectCard({ item, index }) {
   return (
     <article className="wide-card project-card">
@@ -89,19 +91,42 @@ function ProjectCard({ item, index }) {
 
 export default function CollectionPage({ kind }) {
   const rentals = kind === "rentals";
-  const [filters, setFilters] = useState(defaults(rentals));
+  const [filters, setFilters] = useState(() => defaults(rentals));
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
+
+  // Re-sync filters instantly on tab/route changes (Rentals <-> Projects)
+  useEffect(() => {
+    setFilters(defaults(rentals));
+  }, [kind, rentals]);
+
   useEffect(() => {
     setData(null);
     setError("");
-    (rentals ? api.getRentals(filters) : api.getProjects(filters))
+
+    // Strip unaccepted/stale parameters based on target entity
+    const payload = { ...filters };
+    if (rentals) {
+      delete payload.project_status;
+      // Safeguard: fall back to posted_at if launch_date is left over
+      if (payload.sort_by === "launch_date") payload.sort_by = "posted_at";
+    } else {
+      delete payload.bhk;
+      delete payload.furnishing;
+      // Safeguard: fall back to launch_date if posted_at is left over
+      if (payload.sort_by === "posted_at") payload.sort_by = "launch_date";
+    }
+
+    (rentals ? api.getRentals(payload) : api.getProjects(payload))
       .then(setData)
       .catch((err) => setError(err.message));
   }, [rentals, filters]);
+
   const update = (key, value) =>
     setFilters((current) => ({ ...current, page: 1, [key]: value }));
+
   const records = data?.results || [];
+
   return (
     <>
       <section className="page-heading">
